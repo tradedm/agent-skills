@@ -15,9 +15,12 @@ https://tradedm.com/api/v1/client
 Authorization: Bearer tdmk_...
 ```
 
-Keys are created at Account → API Access and shown once. Up to 3 active keys per account.
-Revoking takes effect on the next request. Keys in query strings are rejected (`401
-key_in_query_not_allowed`).
+That base URL is a prefix, not a page — opening it in a browser returns `403`, which is
+correct. Append an endpoint from the table below.
+
+Keys are created at [Account → API Access](https://tradedm.com/account.php) and shown once.
+Up to 3 active keys per account. Revoking takes effect on the next request. Keys in query
+strings are rejected (`401 key_in_query_not_allowed`).
 
 ## Endpoints
 

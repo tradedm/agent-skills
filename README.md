@@ -1,7 +1,12 @@
-# TradeDM Skills
+# TradeDM Agent Skills
 
 Open agent skills for the **TradeDM Client API** — the read-only interface a TradeDM
 subscriber's own AI assistant uses to fetch the daily trade signals they subscribe to.
+
+**A signal is one model's `UP` or `DOWN` direction call on one ticker for one trading day**,
+published before the open, often with a price target and intraday stop prices. Every
+performance figure is measured from that day's official open to its official close on a
+hypothetical $1,000 notional.
 
 A skill is a `SKILL.md` file your AI assistant reads and follows. It carries the workflow,
 the vocabulary, and the guardrails, so an agent behaves consistently instead of improvising
@@ -14,9 +19,29 @@ agent, and whatever broker tooling you choose.
 ## Prerequisites
 
 - **A TradeDM subscription** with at least one signal — [tradedm.com](https://tradedm.com)
-- **A TradeDM API key** — Account → API Access → Create Key. Copy it once; it is never shown
-  again. Store it in an environment variable (`TRADEDM_API_KEY`), never in a chat message or
-  a committed file.
+- **A TradeDM API key** — [Account → API Access](https://tradedm.com/account.php) → Create Key.
+  Copy it once; it is never shown again. Store it in an environment variable
+  (`TRADEDM_API_KEY`), never in a chat message or a committed file.
+
+## Quickstart
+
+Check that your key works before wiring up any agent:
+
+```bash
+curl -H "Authorization: Bearer tdmk_YOUR_KEY_HERE" \
+  https://tradedm.com/api/v1/client/me.php
+```
+
+```jsonc
+// abridged — see reference.md for every field
+{"success":true,"data":{"key_label":"My ChatGPT","entitled_signals":12,
+ "window":"pre_signal","board_date":"2026-08-27","signals_at_ts":1787837100}}
+```
+
+That response means you're connected: the key's label, how many signals it unlocks, and when
+the next board publishes. Then `GET /signals.php` for the board itself. Full endpoint
+reference: [reference.md](skills/daily-signals/reference.md) or the
+[API guide](https://tradedm.com/apidocs.php).
 
 ## Install
 

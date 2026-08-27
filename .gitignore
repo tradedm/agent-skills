@@ -1,0 +1,14 @@
+# macOS
+.DS_Store
+._*
+
+# Editors
+.vscode/
+.idea/
+*.swp
+
+# Never belongs in a public docs repo
+.env
+*.pem
+*.key
+config_*.php
