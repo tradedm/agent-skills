@@ -27,7 +27,7 @@ skill is read-only and touches no broker.
 1. **Verify the key first.** Every session starts with `GET /me.php`. A revoked or mistyped key
    fails loudly here instead of quietly returning an empty board later.
 
-2. **Know what it is fetching.** A signal is one model's `UP` / `DOWN` direction call on one
+2. **Know what it is fetching.** A signal is one model's `LONG` / `SHORT` direction call on one
    ticker for **one trading day**. It is not a standing position, not a target price to chase,
    and not advice.
 
@@ -81,7 +81,7 @@ skill is read-only and touches no broker.
 
 | Field | Meaning |
 |---|---|
-| `direction` | `UP` = long bias, `DOWN` = short bias, for **that trading day only** |
+| `direction` | `LONG` or `SHORT`, for **that trading day only** |
 | `ai_price_target` | The model's predicted closing price, when it publishes one |
 | `stop_loss` / `stop_gain` | Intraday stop prices, when the model supports them. Null means the model published none — not "no risk" |
 | `release_time` | ET clock time this signal publishes (default 09:25, may be later by design) |
@@ -156,6 +156,15 @@ ones" unless asked — the subscriber chose these signals deliberately.
 - `GET /results.php?model_id=N&days=90` — scored day-by-day history
 - `GET /performance.php` — 30-day snapshot for every signal; `?model_id=N` for depth
 - `GET /portfolios.php` — how the subscriber grouped their signals
+
+Research (historical; see `reference.md`):
+
+- `GET /history.php` — scored calls
+- `GET /models.php` — models and their tickers
+- `GET /catalog.php` — signal statistics
+- `GET /portfolio_lookup.php` — portfolio statistics
+
+Research data is never today's board. A ranking describes the past; never present it as a forecast.
 
 Use these when asked for context. Do not dump history into every response.
 

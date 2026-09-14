@@ -33,9 +33,22 @@ All `GET`. All read-only. All scoped to the key's own account.
 | `/portfolios.php` | — | The subscriber's portfolios and their member signals |
 | `/results.php` | `model_id`, `days` (7–3650, default 30) | Scored day-by-day history |
 | `/performance.php` | `model_id`, `days` | 30-day snapshot for all, or depth for one |
+| `/history.php` | `symbol`, `model`, `portfolio`, `period`, `sort`, `format` | Scored calls |
+| `/models.php` | — | Models and their tickers |
+| `/catalog.php` | `symbol`, `model`, `sector`, `industry`, `etf_theme`, `period`, `sort` | Signal statistics |
+| `/portfolio_lookup.php` | `portfolio`, `period` | Portfolio statistics |
 | `/openapi.php` | — | The spec itself (no key required) |
 
 Envelope: `{"success": true, "data": {...}}` · errors: `{"success": false, "error": "code"}`.
+
+## Research endpoints
+
+Historical data only; responses end on `settled_through`. Full parameters are in the spec.
+
+- `period`: `1d` `7d` `30d` `90d` `mtd` `ytd` `1yr` `all`, or `start`/`end`
+- `result`: `correct`, `wrong` or `flat` (neither a win nor a loss)
+- `sector`, `industry` and `etf_theme` are `|`-separated; `symbol` and `model` are comma-separated
+- Invalid values return `422` with the allowed values
 
 ## `/me.php` fields
 
@@ -74,13 +87,15 @@ Envelope: `{"success": true, "data": {...}}` · errors: `{"success": false, "err
 | `ticker`, `full_name` | The security |
 | `version` | The model, e.g. `A0.08`. A Signal is Model × Symbol |
 | `model_type` | `ai` or `classic` |
-| `direction` | `UP` (long bias) or `DOWN` (short bias), for that day only |
+| `direction` | `LONG` or `SHORT`, for that day only |
 | `ai_price_target` | Model's predicted closing price, or null |
 | `stop_loss`, `stop_gain` | Intraday stop prices, or null when the model publishes none |
 | `group_price_avg`, `votes_up`, `votes_down` | Classical-group inputs, where applicable |
-| `prev_close`, `prev_day_pct`, `prev_direction`, `prev_correct`, `prev_pl` | Prior session |
+| `prev_close`, `prev_day_pct`, `prev_direction`, `prev_result`, `prev_correct`, `prev_pl` | Prior session |
 | `alpha_30d` | 30-day net minus close-to-close Buy & Hold, $1,000 basis |
-| `today_pl`, `today_correct` | This board day's scored result; null until `scored` is true |
+| `today_pl`, `today_result`, `today_correct` | This board day's scored result; null until `scored` is true |
+
+`*_result` is `correct`, `wrong` or `flat`; prefer it to `*_correct`.
 
 ## Release schedule
 
@@ -99,8 +114,8 @@ All figures use a hypothetical **$1,000 notional per signal**, official open to 
 before commissions, fees, slippage, and taxes.
 
 ```text
-direction = UP    →  pl = (close - open) / open * 1000
-direction = DOWN  →  pl = (open - close) / open * 1000
+direction = LONG   →  pl = (close - open) / open * 1000
+direction = SHORT  →  pl = (open - close) / open * 1000
 
 gain_loss_pct     = pl / 10          # percent of the $1,000
 accuracy          = wins / scored_days

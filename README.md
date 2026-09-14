@@ -3,7 +3,7 @@
 Open agent skills for the **TradeDM Client API** — the read-only interface a TradeDM
 subscriber's own AI assistant uses to fetch the daily trade signals they subscribe to.
 
-**A signal is one model's `UP` or `DOWN` direction call on one ticker for one trading day**,
+**A signal is one model's `LONG` or `SHORT` direction call on one ticker for one trading day**,
 published before the open, often with a price target and intraday stop prices. Every
 performance figure is measured from that day's official open to its official close on a
 hypothetical $1,000 notional.
