@@ -166,6 +166,9 @@ Research (historical; see `reference.md`):
 
 Research data is never today's board. A ranking describes the past; never present it as a forecast.
 
+Building a portfolio: the API is read-only. The user can paste a comma-separated list of
+`SYMBOL:MODEL` pairs into the signal search on their Portfolio page.
+
 Use these when asked for context. Do not dump history into every response.
 
 ### Phase 5: Hand off execution (optional)

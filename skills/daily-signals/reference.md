@@ -50,6 +50,15 @@ Historical data only; responses end on `settled_through`. Full parameters are in
 - `sector`, `industry` and `etf_theme` are `|`-separated; `symbol` and `model` are comma-separated
 - Invalid values return `422` with the allowed values
 
+## Portfolio lists
+
+The API is read-only. To build a portfolio, paste comma-separated pairs into the signal search on
+the Portfolio page:
+
+```text
+SYMBOL:MODEL, SYMBOL:MODEL, SYMBOL:MODEL
+```
+
 ## `/me.php` fields
 
 | Field | Meaning |
