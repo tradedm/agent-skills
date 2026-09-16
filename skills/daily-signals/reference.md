@@ -28,14 +28,14 @@ All `GET`. All read-only. All scoped to the key's own account.
 
 | Endpoint | Parameters | Returns |
 |---|---|---|
-| `/me.php` | — | Key + account confirmation and the polling contract |
+| `/me.php` | — | Key + account confirmation, the polling contract and settlement |
 | `/signals.php` | `date` (YYYY-MM-DD), `portfolio_id` | The signal board for one trading day |
 | `/portfolios.php` | — | The subscriber's portfolios and their member signals |
-| `/results.php` | `model_id`, `days` (7–3650, default 30) | Scored day-by-day history |
+| `/results.php` | `model_id`, `days` (1–3650, default 30) | Scored day-by-day history |
 | `/performance.php` | `model_id`, `days` | 30-day snapshot for all, or depth for one |
-| `/history.php` | `symbol`, `model`, `portfolio`, `period`, `sort`, `format` | Scored calls |
+| `/history.php` | `symbol`, `model`, `portfolio`, `period`, screens, `sort`, `format` | Scored calls |
 | `/models.php` | — | Models and their tickers |
-| `/catalog.php` | `symbol`, `model`, `sector`, `industry`, `etf_theme`, `period`, `sort` | Signal statistics |
+| `/catalog.php` | `symbol`, `model`, `sector`, `industry`, `etf_theme`, screens, `period`, `sort` | Signal statistics |
 | `/portfolio_lookup.php` | `portfolio`, `period` | Portfolio statistics |
 | `/openapi.php` | — | The spec itself (no key required) |
 
@@ -49,6 +49,24 @@ Historical data only; responses end on `settled_through`. Full parameters are in
 - `result`: `correct`, `wrong` or `flat` (neither a win nor a loss)
 - `sector`, `industry` and `etf_theme` are `|`-separated; `symbol` and `model` are comma-separated
 - Invalid values return `422` with the allowed values
+- `/history.php` rows carry `open_price`, `close_price`, `pl_pct` and `pl_dollars`; sort by `pl` or
+  `abs_pl` (size of the move)
+- `/catalog.php` rows carry `exchange`, the last settled call (`direction_1d`, `result_1d`,
+  `open_price_1d`, `close_price_1d`, `pl_1d_pct`), `last_close` and `avg_dollar_volume`
+
+### Screens
+
+`/history.php` and `/catalog.php`. Each keeps or drops whole signals, judged on the stock as it
+trades now.
+
+| Parameter | Keeps signals whose stock |
+|---|---|
+| `min_price` | Last closed at or above this |
+| `min_dollar_volume` | Averages at least this volume × VWAP over its latest 20 sessions |
+| `exchange` | Lists on one of these: `AMEX` `ARCA` `BATS` `NASDAQ` `NYSE` `OTC` |
+| `exclude_otc=1` | Lists on a known non-OTC exchange |
+
+Volume trails prices by one session. OTC listings have no volume, so a volume screen drops them.
 
 ## Portfolio lists
 
@@ -72,6 +90,8 @@ SYMBOL:MODEL, SYMBOL:MODEL, SYMBOL:MODEL
 | `signals_at_ts` | When the EARLIEST signal on this account publishes on `board_date` |
 | `signals_complete_ts` | When the LAST expected signal publishes on `board_date` |
 | `next_trading_day` | Next NYSE session (holiday-aware) |
+| `settled_through` | Last session the research endpoints and `/results.php` cover |
+| `settlement_complete` | `true` once today's session has settled; always `true` on a day with no session |
 
 ## `/signals.php` context fields
 

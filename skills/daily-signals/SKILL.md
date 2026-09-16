@@ -126,6 +126,8 @@ Read the live spec rather than trusting a cached copy of the field list — the 
 - `window` — `pre_signal` (today's board not out yet) · `active` · `post_market` · `closed`
 - `board_date` — the trading day the next/current board belongs to
 - `signals_at_ts` / `signals_complete_ts` — when the first and last of your signals publish
+- `settled_through` / `settlement_complete` — the last session research data covers, and whether
+  today's has settled
 - `server_ts` — TradeDM's clock; compare timestamps against this, never the local clock
 
 If this call fails with `401`, stop. Do not retry with the same key; the key is revoked,
@@ -159,10 +161,13 @@ ones" unless asked — the subscriber chose these signals deliberately.
 
 Research (historical; see `reference.md`):
 
-- `GET /history.php` — scored calls
+- `GET /history.php` — scored calls, with official open, close and P/L
 - `GET /models.php` — models and their tickers
-- `GET /catalog.php` — signal statistics
+- `GET /catalog.php` — signal statistics, the last settled call, price and dollar volume
 - `GET /portfolio_lookup.php` — portfolio statistics
+
+To analyse a session after the close, wait for `settlement_complete` on `/me.php`, then read
+`period=1d`. Screen with `min_price`, `min_dollar_volume`, `exchange` or `exclude_otc=1`.
 
 Research data is never today's board. A ranking describes the past; never present it as a forecast.
 
