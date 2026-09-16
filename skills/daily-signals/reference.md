@@ -29,7 +29,7 @@ All `GET`. All read-only. All scoped to the key's own account.
 | Endpoint | Parameters | Returns |
 |---|---|---|
 | `/me.php` | — | Key + account confirmation, the polling contract and settlement |
-| `/signals.php` | `date` (YYYY-MM-DD), `portfolio_id` | The signal board for one trading day |
+| `/signals.php` | `date` (YYYY-MM-DD), `portfolio_id`, screens | The signal board for one trading day |
 | `/portfolios.php` | — | The subscriber's portfolios and their member signals |
 | `/results.php` | `model_id`, `days` (1–3650, default 30) | Scored day-by-day history |
 | `/performance.php` | `model_id`, `days` | 30-day snapshot for all, or depth for one |
@@ -56,8 +56,8 @@ Historical data only; responses end on `settled_through`. Full parameters are in
 
 ### Screens
 
-`/history.php` and `/catalog.php`. Each keeps or drops whole signals, judged on the stock as it
-trades now.
+`/signals.php`, `/history.php` and `/catalog.php`. Each keeps or drops whole signals, judged on the
+stock as it trades now. Use them on the board only when the subscriber asks.
 
 | Parameter | Keeps signals whose stock |
 |---|---|
@@ -99,6 +99,7 @@ SYMBOL:MODEL, SYMBOL:MODEL, SYMBOL:MODEL
 |---|---|
 | `date` | The trading day these signals belong to. **Verify before acting** |
 | `portfolio_id` | Echoes the applied scope; `null` = the full subscribed board |
+| `screens` | Screens applied, `as_of` (date judged) and `excluded` (signals removed, pending included) |
 | `window`, `market_phase`, `board_date` | As above |
 | `scored` | `true` once the board day has closed and `today_pl` is final |
 | `server_ts` | TradeDM's unix clock |

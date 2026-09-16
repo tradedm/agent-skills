@@ -150,8 +150,11 @@ Then, **before presenting anything as actionable**:
 ### Phase 3: Present the board
 
 Report every signal with ticker, model version, direction, and any target and stop prices.
-Separate published signals from pending ones. Do not reorder by "best" or filter to "the good
-ones" unless asked — the subscriber chose these signals deliberately.
+Separate published signals from pending ones. Present the board as published. Rank, filter or
+screen it only on the subscriber's instruction — the selection is theirs.
+
+To screen on price, dollar volume or exchange, pass the screens to `/signals.php`. Report
+`screens.excluded`: the subscriber must know how many signals the screen removed.
 
 ### Phase 4: Context on request
 
@@ -167,7 +170,7 @@ Research (historical; see `reference.md`):
 - `GET /portfolio_lookup.php` — portfolio statistics
 
 To analyse a session after the close, wait for `settlement_complete` on `/me.php`, then read
-`period=1d`. Screen with `min_price`, `min_dollar_volume`, `exchange` or `exclude_otc=1`.
+`period=1d`. The same screens apply there.
 
 Research data is never today's board. A ranking describes the past; never present it as a forecast.
 
