@@ -153,7 +153,7 @@ Report every signal with ticker, model version, direction, and any target and st
 Separate published signals from pending ones. Present the board as published. Rank, filter or
 screen it only on the subscriber's instruction — the selection is theirs.
 
-To screen on price, dollar volume or exchange, pass the screens to `/signals.php`. Report
+To screen on price, dollar volume or exchange, or to sort, pass the screens or `sort` to `/signals.php`. Report
 `screens.excluded`: the subscriber must know how many signals the screen removed.
 
 ### Phase 4: Context on request

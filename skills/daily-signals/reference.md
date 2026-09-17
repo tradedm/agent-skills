@@ -29,14 +29,14 @@ All `GET`. All read-only. All scoped to the key's own account.
 | Endpoint | Parameters | Returns |
 |---|---|---|
 | `/me.php` | — | Key + account confirmation, the polling contract and settlement |
-| `/signals.php` | `date` (YYYY-MM-DD), `portfolio_id`, screens | The signal board for one trading day |
+| `/signals.php` | `date` (YYYY-MM-DD), `portfolio_id`, screens, `sort` | The signal board for one trading day |
 | `/portfolios.php` | — | The subscriber's portfolios and their member signals |
-| `/results.php` | `model_id`, `days` (1–3650, default 30) | Scored day-by-day history |
+| `/results.php` | `model_id`, `days` (1–3650, default 30) or `sessions`, `sort` | Scored day-by-day history |
 | `/performance.php` | `model_id`, `days` | 30-day snapshot for all, or depth for one |
-| `/history.php` | `symbol`, `model`, `portfolio`, `period`, screens, `sort`, `format` | Scored calls |
+| `/history.php` | `symbol`, `model`, `portfolio`, `period` or `sessions`, screens, `sort`, `format` | Scored calls |
 | `/models.php` | — | Models and their tickers |
-| `/catalog.php` | `symbol`, `model`, `sector`, `industry`, `etf_theme`, screens, `period`, `sort` | Signal statistics |
-| `/portfolio_lookup.php` | `portfolio`, `period` | Portfolio statistics |
+| `/catalog.php` | `symbol`, `model`, `sector`, `industry`, `etf_theme`, screens, `period` or `sessions`, `sort` | Signal statistics |
+| `/portfolio_lookup.php` | `portfolio`, `period` or `sessions` | Portfolio statistics |
 | `/openapi.php` | — | The spec itself (no key required) |
 
 Envelope: `{"success": true, "data": {...}}` · errors: `{"success": false, "error": "code"}`.
@@ -45,7 +45,10 @@ Envelope: `{"success": true, "data": {...}}` · errors: `{"success": false, "err
 
 Historical data only; responses end on `settled_through`. Full parameters are in the spec.
 
-- `period`: `1d` `7d` `30d` `90d` `mtd` `ytd` `1yr` `all`, or `start`/`end`
+- `period`: `1d` `7d` `30d` `90d` `mtd` `ytd` `1yr` `all`, or `start`/`end`, or `sessions=N` (last N
+  trading sessions)
+- `sort=pl` on history, catalog, results and signals; on signals only once the board is scored
+  (`sort=prev_pl` sorts on the previous session)
 - `result`: `correct`, `wrong` or `flat` (neither a win nor a loss)
 - `sector`, `industry` and `etf_theme` are `|`-separated; `symbol` and `model` are comma-separated
 - Invalid values return `422` with the allowed values
@@ -164,7 +167,9 @@ will differ from these figures.
 | 403 | `not_permitted` | Not entitled to that model or portfolio |
 | 403 | `api_disabled` | Client API is off for this environment |
 | 405 | `method_not_allowed` | Only `GET` is supported |
-| 422 | `validation_failed` | Bad parameter; `fields[]` names it |
+| 422 | `validation_failed` | Bad parameter value; `fields[]` names it |
+| 422 | `unknown_parameter` | Parameter the endpoint does not take; `allowed[]` lists what it does |
+| 422 | `not_scored` | `sort=pl` on a board that has not closed |
 | 429 | `rate_limited` | Throttled; `Retry-After` header and `retry_after` field |
 | 500 | `internal_error` | Server-side fault |
 
