@@ -3,7 +3,8 @@ name: tradedm-daily-signals
 description: >
   Fetch and interpret the daily trade signals a TradeDM subscriber is entitled
   to — the day's board, portfolio groupings, scored history, and model
-  statistics — over the read-only TradeDM Client API. Use this skill whenever a
+  statistics — over the TradeDM Client API, and build portfolios from them on
+  request. Use this skill whenever a
   TradeDM subscriber asks their agent to retrieve, summarize, monitor, or act on
   their signals, including handing them to separate broker tooling for
   execution. TradeDM publishes signals; it never places, sizes, or times orders.
@@ -18,7 +19,8 @@ key, and your own agent. Your agent's job here is **retrieval and honest interpr
 the board, say plainly what the models called, and hand the decision back to you.
 
 TradeDM is a financial publication. It grades signals; it does not manage anyone's money. This
-skill is read-only and touches no broker.
+skill reads signals and, only when you ask, builds portfolios on your own account. It touches no
+broker.
 
 ---
 
@@ -62,6 +64,10 @@ skill is read-only and touches no broker.
 10. **Never put the key in a URL.** It goes in the `Authorization` header. The API rejects
     query-string keys outright, and URLs end up in logs and history.
 
+11. **Write only when asked.** Creating or activating a portfolio changes your account, and
+    activating can subscribe signals. Your agent does either only at your explicit request, shows
+    you the signal list first, and reports what `granted` subscribed afterwards.
+
 ---
 
 ## 1 - Prerequisites
@@ -72,8 +78,8 @@ skill is read-only and touches no broker.
   chat message and never committed**.
 - **Base URL**: `https://tradedm.com/api/v1/client`
 - **Auth header**: `Authorization: Bearer tdmk_...`
-- **Network access** to `tradedm.com`. No SDK required — every endpoint is a plain `GET`
-  returning JSON.
+- **Network access** to `tradedm.com`. No SDK required — every endpoint is a plain `GET` or
+  `POST` returning JSON.
 
 ---
 
@@ -174,8 +180,15 @@ To analyse a session after the close, wait for `settlement_complete` on `/me.php
 
 Research data is never today's board. A ranking describes the past; never present it as a forecast.
 
-Building a portfolio: the API is read-only. The user can paste a comma-separated list of
-`SYMBOL:MODEL` pairs into the signal search on their Portfolio page.
+Building a portfolio, only when asked (see rule 11):
+
+- `POST /portfolio_create.php` with `{"name": "...", "signals": ["SYMBOL:MODEL", ...]}` — creates a
+  sandbox portfolio with notifications off
+- `POST /portfolio_activate.php` with `{"name": "..."}` or `{"portfolio_id": N}` — subscribes any
+  missing signals when that adds no cost to the plan, then activates. Otherwise
+  `402 checkout_required` lists them and nothing changes
+
+Notifications stay off until the subscriber turns them on at the website.
 
 Use these when asked for context. Do not dump history into every response.
 
@@ -272,7 +285,8 @@ When reporting performance, your agent additionally states the basis in words:
 - **NEVER** characterize a signal or model as safe, reliable, low-risk, or due for a win.
 - **NEVER** probe model or portfolio ids the subscriber is not entitled to; a `403` is an answer,
   not an invitation to enumerate.
-- **NEVER** place, modify, or cancel an order from this skill. It is read-only.
+- **NEVER** place, modify, or cancel an order from this skill. It touches no broker.
+- **NEVER** create or activate a portfolio the subscriber did not ask for.
 - **NEVER** skip or talk a subscriber out of a broker tool's confirmation step.
 - **NEVER** poll in a tight loop; wait for the published release times.
 
@@ -299,8 +313,8 @@ Your agent includes this in every board summary, performance report, and review 
 - Your agent refuses a key offered in plain text and asks for it to be set in the environment.
 - Signal data is the subscriber's own subscription content. Your agent does not republish it,
   post it, or send it to third parties.
-- The API is read-only: nothing your agent does here can change the subscriber's account,
-  subscriptions, or portfolios.
+- Only the two Build calls change the subscriber's account: they create and activate portfolios,
+  and activation can subscribe signals. Every other call is read-only.
 
 ---
 

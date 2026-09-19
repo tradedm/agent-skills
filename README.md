@@ -1,7 +1,8 @@
 # TradeDM Agent Skills
 
-Open agent skills for the **TradeDM Client API** — the read-only interface a TradeDM
-subscriber's own AI assistant uses to fetch the daily trade signals they subscribe to.
+Open agent skills for the **TradeDM Client API** — the interface a TradeDM subscriber's own AI
+assistant uses to fetch the daily trade signals they subscribe to, and to build portfolios from
+them on request.
 
 **A signal is one model's `LONG` or `SHORT` direction call on one ticker for one trading day**,
 published before the open, often with a price target and intraday stop prices. Every

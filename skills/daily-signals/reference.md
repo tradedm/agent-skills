@@ -24,7 +24,7 @@ strings are rejected (`401 key_in_query_not_allowed`).
 
 ## Endpoints
 
-All `GET`. All read-only. All scoped to the key's own account.
+All `GET` and read-only, except the two Build endpoints (`POST`). All scoped to the key's own account.
 
 | Endpoint | Parameters | Returns |
 |---|---|---|
@@ -37,6 +37,8 @@ All `GET`. All read-only. All scoped to the key's own account.
 | `/models.php` | — | Models and their tickers |
 | `/catalog.php` | `symbol`, `model`, `sector`, `industry`, `etf_theme`, screens, `period` or `sessions`, `sort` | Signal statistics |
 | `/portfolio_lookup.php` | `portfolio`, `period` or `sessions` | Portfolio statistics |
+| `POST /portfolio_create.php` | body: `name`, `signals` and/or `model_ids` | Build: a sandbox portfolio |
+| `POST /portfolio_activate.php` | body: `portfolio_id` or `name` | Build: activates, subscribing missing signals when that adds no cost |
 | `/openapi.php` | — | The spec itself (no key required) |
 
 Envelope: `{"success": true, "data": {...}}` · errors: `{"success": false, "error": "code"}`.
@@ -71,14 +73,37 @@ stock as it trades now. Use them on the board only when the subscriber asks.
 
 Volume trails prices by one session. OTC listings have no volume, so a volume screen drops them.
 
-## Portfolio lists
+## Building portfolios
 
-The API is read-only. To build a portfolio, paste comma-separated pairs into the signal search on
-the Portfolio page:
+Two `POST` calls with a JSON body. Every body field must be one the endpoint takes, as with query
+parameters.
 
-```text
-SYMBOL:MODEL, SYMBOL:MODEL, SYMBOL:MODEL
+**Create** — `POST /portfolio_create.php`
+
+```json
+{"name": "Energy leaders", "signals": ["XOM:MA0.10", "CVX:MCA0.01BB"]}
 ```
+
+`signals` also takes one comma-separated string; `model_ids` takes integers. Matching is
+case-insensitive. The portfolio starts as a sandbox with notifications off. Any unknown or retired
+signal fails the request with `422 unknown_signals`, naming each one. `201` returns
+`portfolio_id`, `status`, `signal_count`, `subscribed`, `to_license` and `signals[]`
+(`model_id`, `ticker`, `version`, `subscribed`).
+
+**Activate** — `POST /portfolio_activate.php`
+
+```json
+{"portfolio_id": 123}
+```
+
+An active portfolio needs a subscription to every signal in it. Missing ones are subscribed in the
+same step when that adds no cost to the plan (during the beta: always) and are listed in
+`granted`. Otherwise `402 checkout_required` lists them in `to_license` and nothing changes.
+Activating an active portfolio returns `200` with `already_active: true`. Activation never turns
+notifications on.
+
+The same `SYMBOL:MODEL` list, comma-separated, can also be pasted into the signal search on the
+Portfolio page.
 
 ## `/me.php` fields
 
@@ -166,10 +191,17 @@ will differ from these figures.
 | 401 | `key_in_query_not_allowed` | Key was passed in the URL |
 | 403 | `not_permitted` | Not entitled to that model or portfolio |
 | 403 | `api_disabled` | Client API is off for this environment |
-| 405 | `method_not_allowed` | Only `GET` is supported |
+| 402 | `checkout_required` | Activation needs signals bought first; `to_license[]` lists them |
+| 404 | `portfolio_not_found` | No portfolio of yours has that id or name |
+| 405 | `method_not_allowed` | Build endpoints take `POST`; every other endpoint `GET` |
+| 409 | `name_taken` | A portfolio of yours already has that name; `portfolio_id` is it |
 | 422 | `validation_failed` | Bad parameter value; `fields[]` names it |
 | 422 | `unknown_parameter` | Parameter the endpoint does not take; `allowed[]` lists what it does |
 | 422 | `not_scored` | `sort=pl` on a board that has not closed |
+| 422 | `invalid_json` / `unknown_field` | Body is not a JSON object, or has a field the endpoint does not take |
+| 422 | `invalid_name` / `no_signals` / `unknown_signals` | Create: bad name, no signals, or signals that do not exist (listed) |
+| 422 | `portfolio_required` / `invalid_portfolio_id` | Activate: send `portfolio_id` or `name` |
+| 422 | `reference_readonly` / `empty_portfolio` / `signals_unavailable` | Activate: the automatic Subscribed portfolio, no signals, or members no longer offered (listed) |
 | 429 | `rate_limited` | Throttled; `Retry-After` header and `retry_after` field |
 | 500 | `internal_error` | Server-side fault |
 
